@@ -2,6 +2,7 @@ package com.zhu;
 
 import com.zz.SelfServlet;
 
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,8 +17,15 @@ public class SocketProcessor implements Runnable{
 
     private Socket socket;
 
+    private Tomcat tomcat;
+
     public SocketProcessor(Socket socket) {
         this.socket = socket;
+    }
+
+    public SocketProcessor(Socket socket, Tomcat tomcat) {
+        this.socket = socket;
+        this.tomcat = tomcat;
     }
 
     private void processSocket(Socket socket) {
@@ -35,20 +43,41 @@ public class SocketProcessor implements Runnable{
             request.setSocket(socket);
             Response response = new Response(request);
 
-            //这里自定义Servlet模拟用户写的servlet，暂时没写到tomcat加载webapps的servlet出此下策
-            SelfServlet selfServlet = new SelfServlet();
-            selfServlet.service(request, response);
+//            //这里自定义Servlet模拟用户写的servlet，暂时没写到tomcat加载webapps的servlet出此下策
+//            SelfServlet selfServlet = new SelfServlet();
+//            selfServlet.service(request, response);
 
-            //发送响应
-            response.complete();
+            //通过url 找到对应的servlet
+            String requestUrl = request.getRequestURL().toString();
+            System.out.println("requestUrl = " + requestUrl);
+            requestUrl = requestUrl.substring(1);
+            String[] part = requestUrl.split("/");
+            String appName = part[0];
+            if(part.length>1){
+                String urlPattern = part[1];
 
+                Context context = tomcat.getContextMap().get(appName);
+                if(context != null){
+                    Servlet servlet = context.getByUrlPattern(urlPattern);
+                    if(servlet != null){
+                        servlet.service(request, response);
+                        //发送响应
+                        response.complete();
+                    }else{
+                        //servlet为空，搞一个默认的servlet
+                        DefaultServlet defaultServlet = new DefaultServlet();
+                        defaultServlet.service(request,response);
+                        //发送响应
+                        response.complete();
+                    }
+                }
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
-
 
     }
 

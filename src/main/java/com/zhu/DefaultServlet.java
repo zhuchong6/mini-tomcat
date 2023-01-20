@@ -1,7 +1,6 @@
-package com.zz;
+package com.zhu;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -9,18 +8,16 @@ import java.io.IOException;
 
 /**
  * @author by zhuhcong
- * @descr 测试的servlet
- * @date 2023/1/8 23:55
+ * @descr
+ * @date 2023/1/21 02:02
  */
-@WebServlet(urlPatterns = {"/mini-tomcat"})
-public class SelfServlet extends HttpServlet {
+public class DefaultServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("user servlet:"+req.getMethod());
+        System.out.println("tomcat error servlet:"+req.getMethod());
         resp.addHeader("Content-Length", "12");
         resp.addHeader("Content-Type", "text/plain;charset=utf-8");
-        resp.getOutputStream().write("hello , mini-tomcat".getBytes());
+        resp.getOutputStream().write("hello , 404 mini-tomcat".getBytes());
     }
-
 }
